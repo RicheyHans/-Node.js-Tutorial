@@ -32,13 +32,29 @@ var login = function(req, res){
           // callback(null,docs)로 docs를 파라미터로 전달되게 선언됨
           if(docs) {
             console.dir(docs);
+
             var username = docs[0].name;
+
             res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
-			res.write('<h1>로그인 성공</h1>');
-			res.write('<div><p>사용자 아이디 : ' + paramId + '</p></div>');
-			res.write('<div><p>사용자 이름 : ' + username + '</p></div>');
-			res.write("<br><br><a href='/public/login.html'>다시 로그인하기</a>");
-			res.end();
+            
+            // 뷰 템플릿을 사용해 렌더링 후 전송
+            var context = {userid: paramId, username: username};
+            req.app.render('login_success', context, function(err, html){
+                if(err){
+                    console.error('뷰 렌더링 중 오류 발생 : ' + err.stack);
+
+                    res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+                    res.write('<h2>뷰 렌더링 중 오류 발생</h2>');
+                    res.wrtie('<p>' + err.stack + '</p>');
+                    res.end();
+
+                    return;
+                }
+                console.log('rendered: ' + html);
+
+                res.end(html);
+            });
+            
           } else {  // 조회된 기록이 없는 경우
             res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
             res.write('<h1>로그인  실패</h1>');
@@ -74,12 +90,29 @@ var adduser = function(req, res){
             if(err) {throw err;}
 
             // 결과 객체 확인하여 추가 데이터가 있을 경우 성공 응답 전송
-            if(result && result.insertedCount > 0){
+            if(result){
                 console.dir(result);
 
                 res.writeHead('200', {'Content-Type': 'text/html;charset=utf8'});
-                res.write('<h2>사용자 추가 성공</h2>');
-                res.end();
+
+                // 뷰 템플레이트를 이용하여 렌더링한 후 전송
+				var context = {title:'사용자 추가 성공'};
+				req.app.render('adduser', context, function(err, html) {
+					if (err) {
+                        console.error('뷰 렌더링 중 에러 발생 : ' + err.stack);
+                
+                        res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+				        res.write('<h2>뷰 렌더링 중 에러 발생</h2>');
+                        res.write('<p>' + err.stack + '</p>');
+				        res.end();
+                
+                        return;
+                    }
+					
+					console.log("rendered : " + html);
+					
+					res.end(html);
+				});
             } else { // 결과 객체가 없을 경우 실패 응답 전송
                 res.writeHead('200', {'Content-Type': 'text/html;charset=utf8'});
                 res.write('<h2>사용자 추가 실패</h2>');
@@ -120,16 +153,25 @@ var listuser = function(req, res){
                 console.dir(results);
 
                 res.writeHead('200', {'Content-Type': 'text/html;charset=utf8'});
-                res.write('<h2>사용자 리스트</h2>');
-                res.write('<div><ul>');
+                
+                // 뷰 템플릿을 이용해 렌더링한 후 전송
+                var context = {results : results};
+                req.app.render('listuser', context, function(err, html) {
+				    if (err) {
+                        console.error('뷰 렌더링 중 에러 발생 : ' + err.stack);
+                
+                        res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+				        res.write('<h2>뷰 렌더링 중 에러 발생</h2>');
+                        res.write('<p>' + err.stack + '</p>');
+				        res.end();
+                
+                        return;
+                    }
+					console.log('rendered : ' + html);
+					
+					res.end(html);
+				});
 
-                for(var i = 0; i < results.length; i++){
-                    var curId = results[i]._doc.id;
-                    var curName = results[i]._doc.name;
-                    res.write('     <li>#' + i + ' : ' + curId + ',' + curName + '</li>');
-                }
-                res.write('</ul></div>');
-                res.end();
             } else {    // 결과 객체가 없으면 실패 응답
                 res.writeHead('200', {'Content-Type': 'text/html;charset=utf8'});
                 res.write('<h2>사용자 리스트 조회 실패</h2>');
