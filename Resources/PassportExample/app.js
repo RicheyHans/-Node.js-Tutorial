@@ -198,7 +198,7 @@ passport.use('local-signup', new LocalStrategy({
                     return done(null, false, req.flash('signupMessage', '계정이 이미 있습니다.'));
                 } else {
                     // 모델 인스턴스 객체를 만들어 저장
-                    var user = new database.UserModel( {'email': email, 'password': password, 'name': paramName );
+                    var user = new database.UserModel( {'email': email, 'password': password, 'name': paramName} );
                     user.save(function(err){
                         if(err) { throw err; }
                         console.log('사용자 데이터 추가함');
