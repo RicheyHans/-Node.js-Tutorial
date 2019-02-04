@@ -72,7 +72,73 @@ app.use(passport.session());
 app.use(flash());
 
 // 라우팅 정보를 읽어들여 라우팅 설정
-route_loader.init(app, express.Router());
+var router = express.Router();
+route_loader.init(app, router);
+
+// ===== Passport 관련 라우팅 ===== //
+
+// 홈 화면 - index.ejs 템플릿으로 홈 화면 출력. [views] 폴더의 index.ejs를 단순 로딩
+router.route('/').get(function(req, res){
+    console.log(' / 패스 요청됨');
+    res.render('index.ejs');
+});
+
+// 로그인 화면 - login.ejs 템플릿 출력
+router.route('/login').get(function(req, res){
+    console.log('/login 패스 요청됨');
+    res.render('login.ejs', {message: req.flash('loginMessage')});
+});
+
+// 사용자 인증(POST) - 성공 시 /profile, 실패 시 /login  리다이렉트
+router.route('/login').post(passport.authenticate('local-login', {
+    successRedirect: '/profile',
+    failureRedirect: '/login',
+    failureFlash: true
+}));
+
+// 회원가입 화면 링크 - signup.ejs 템플릿
+router.route('/signup').get(function(req, res){
+    console.log('/signup 패스 요청');
+    res.render('signup.ejs', {message: req.flash('signupMessage')});
+});
+
+router.route('/signup').post(passport.authenticate('local-signup', {
+    successRedirect: '/profile',
+    failureRedirect: '/signup',
+    failureFlash: true
+}));
+
+// 프로필 화면
+router.route('/profile').get(function(req, res){
+    console.log('/profile 패스 요청됨');
+
+    // 인증된 경우, req.user 객체에 사용자 정보가 있으며 인증이 안 된 경우 req.user는 false
+    console.log('req.user 객체 값');
+    console.dir(req.user);
+
+    // 인증 실패
+    if(!req.user){
+        console.log('사용자 인증 실패 상태');
+        res.redirect('/');
+        return;
+    }
+
+    // 인증 성공
+    console.log('사용자 인증 성공 상태');
+    if(Array.isArray(req.user)){
+        res.render('profile.ejs', {user: req.user[0]._doc});
+    } else {
+        res.render('profile.ejs', {user: req.user});
+    }
+});
+
+// 로그아웃 - 로그아웃 요청 시 req.logout() 요청하게 됨
+router.route('/logout').get(function(req, res){
+    console.log('/logout 패스 요청됨');
+
+    req.logout();
+    res.redirect('/');
+});
 
 // ===== Passport Strategy 설정 ===== //
 
@@ -143,6 +209,23 @@ passport.use('local-signup', new LocalStrategy({
         });
     }));
 
+
+// 사용자 인증에 따른 serialize 기능 정의
+passport.serializeUser(function(user, done){
+    console.log('serializerUser() 호출');
+    console.dir(user);
+
+    done(null, user);
+});
+
+// 인증 이후의 사용자 요청
+passport.deserializeUser(function(user, done) {
+	console.log('deserializeUser() 호출됨.');
+	console.dir(user);
+	
+	done(null, user);  
+});
+
 // ===== 404 오류 페이지 처리 ===== //
 var errorHandler = expressErrorHandler({
     static: {
@@ -160,6 +243,4 @@ http.createServer(app).listen(app.get('port'), function(){
     // 데이터베이스 초기화
     database.init(app, config);
    
-
-
 });
