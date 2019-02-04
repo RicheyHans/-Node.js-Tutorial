@@ -27,13 +27,41 @@
 		
 		        <div class="col-sm-6">
 		            <div class="well">
-		                <h3><span class="fa fa-user"></span> 로컬 프로필 정보</h3>
-						<br>
-						<p>
-		                	<strong>이메일</strong>: <%= user.email %>
-		                	<br><br>
-		                	<strong>별명</strong>: <%= user.name %>
-		                </p>
+		            
+		            	<% if (user.provider == undefined || user.provider == '') { %>
+			                <h3><span class="fa fa-user"></span> 로컬 프로필</h3>
+							<br>
+							<p>
+								<strong>이메일</strong>: <%= user.email %><br><br>
+		                		<strong>별명</strong>: <%= user.name %>
+			                </p>
+			            <% } else if (user.provider == 'facebook') { %>
+							<h3 class="text-primary"><span class="fa fa-facebook"></span> 페이스북 프로필</h3>
+							<br>
+		                    <p>
+		                        <strong>아이디</strong>: <%= user.facebook.id %><br><br>
+		                        <strong>이메일</strong>: <%= user.facebook.email %><br><br>
+								<strong>이름</strong>: <%= user.facebook.first_name %>
+								<strong>성</strong>: <%= user.facebook.last_name %>
+		                    </p>
+		                <% } else if (user.provider == 'twitter') { %>
+							<h3 class="text-primary"><span class="fa fa-twitter"></span> 트위터 프로필</h3>
+							<br>
+		                    <p>
+		                        <strong>아이디</strong>: <%= user.twitter.id %><br><br>
+		                        <strong>이메일</strong>: <%= user.twitter.email %><br><br>
+		                        <strong>이름</strong>: <%= user.twitter.name %>
+		                    </p>
+		                <% } else if (user.provider == 'google') { %>
+							<h3 class="text-primary"><span class="fa fa-google"></span> 구글 프로필</h3>
+							<br>
+		                    <p>
+		                        <strong>아이디</strong>: <%= user.google.id %><br><br>
+		                        <strong>이메일</strong>: <%= user.google.email %><br><br>
+		                        <strong>이름</strong>: <%= user.google.name %>
+		                    </p>
+						<% } %>
+		                	
 						<br>
 		            </div>
 		        </div>

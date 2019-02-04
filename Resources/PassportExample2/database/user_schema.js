@@ -9,11 +9,14 @@ Schema.createSchema = function(mongoose){       // app.js에서 mongoose 객체�
     // 스키마 정의
     var UserSchema = mongoose.Schema({
         email: {type: String, 'default':''}
-	    , hashed_password: {type: String, required: true, 'default':''}
-	    , salt: {type:String, required:true}
+	    , hashed_password: {type: String, 'default':''}
+	    , salt: {type: String}
 	    , name: {type: String, index: 'hashed', 'default':''}
 	    , created_at: {type: Date, index: {unique: false}, 'default': Date.now}
-	    , updated_at: {type: Date, index: {unique: false}, 'default': Date.now}
+        , updated_at: {type: Date, index: {unique: false}, 'default': Date.now}
+        , provider: {type: String, 'default': ''}
+        , authToken: {type: String, 'default': ''}
+        , facebook: {}
     });
 
     // password속성 virtual 메소드로 정의하고 set, get 메소드 선언
@@ -61,10 +64,12 @@ Schema.createSchema = function(mongoose){       // app.js에서 mongoose 객체�
         return email.length;
     }, 'email 칼럼의 값이 없습니다.');
 
+    /*
     UserSchema.path('hashed_password').validate(function(hashed_password){
         return hashed_password.length;
     }, 'hashed_password 칼럼의 값이 없습니다.');
-
+    */
+   
     // 스키마에 static으로 findById 메소드 추가
 	UserSchema.static('findByEmail', function(email, callback) {
 		return this.find({email: email}, callback);

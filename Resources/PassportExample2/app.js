@@ -21,7 +21,7 @@ var passport = require('passport');
 var flash = require('connect-flash');
 
 // 설정파일 모듈 로드
-var config = require('./config');
+var config = require('./config/config');
 
 // 모듈로 분리한 데이터베이스 파일 불러오기
 var database = require('./database/database');

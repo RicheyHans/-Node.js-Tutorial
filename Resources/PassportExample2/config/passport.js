@@ -1,5 +1,6 @@
 var local_login = require('./passport/local_login');
 var local_signup = require('./passport/local_signup');
+var facebook = require('./passport/facebook');
 
 // 이 함수 실행 시에는 app, passport 객체를 사용하므로 호출 시 app과 passport 객체를
 // 파라미터로 전달해줘야 정상적으로 실행이 가능하다.
@@ -25,4 +26,5 @@ module.exports = function(app, passport){
     // 인증방식 설정
     passport.use('local-login', local_login);
     passport.use('local-signup', local_signup);
+    passport.use('facebook', facebook(app, passport));
 };
