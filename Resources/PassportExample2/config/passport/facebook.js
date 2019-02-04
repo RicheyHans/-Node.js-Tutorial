@@ -16,10 +16,12 @@ module.exports = function(app, passport){
         };
 
         var database = app.get('database');
-        database.UserModel.load(options, function(err, user){
+        database.UserModel.findOne({'facebook.id': profile.id}, function(err, user){
             if(err) { return done(err); }
 
             if(!user){
+                console.log('없던 계정이니 새로운 모델을 생성합니다.');
+
                 var user = new database.UserModel({
                     name: profile.displayName,
                     email: profile.emails[0].value,
@@ -29,10 +31,11 @@ module.exports = function(app, passport){
                 });
 
                 user.save(function(err){
-                    if(err) { console.log(err); }
+                    if (err) console.log(err);
                     return done(err, user);
                 });
             } else {
+                console.log('로그인 이력이 있는 사용자입니다.');
                 return done(err, user);
             }
         });
