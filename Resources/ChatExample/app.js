@@ -29,6 +29,12 @@ var database = require('./database/database');
 // 모듈로 분리한 라우팅 파일 불러오기
 var route_loader = require('./routes/route_loader');
 
+// Socket.IO 로드
+var socketio = require('socket.io');
+
+// cors 로드 - 클라이언트에서 ajax로 요청 시 CORS 지원
+var cors = require('cors');
+
 
 // 익스프레스 서버 객체 생성
 var app = express();
@@ -71,6 +77,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
+// 클라이언트에서 ajax로 요청 시 CORS(다중 서버 접속) 지원
+// 라우터 미들웨어 사용 코드 바로 상단에 추가한다. - 웹 문서를 받아온 서버의 종류에 상관 없이 
+// socket.io 모듈로 접근 가능해짐
+app.use(cors());
+
 // 라우팅 정보를 읽어들여 라우팅 설정
 var router = express.Router();
 route_loader.init(app, router);
@@ -94,10 +105,25 @@ app.use(expressErrorHandler.httpError(404));
 app.use(errorHandler);
 
 // ===== 서버 시작 ===== //
-http.createServer(app).listen(app.get('port'), function(){
+var server = http.createServer(app).listen(app.get('port'), function(){
     console.log('서버가 시작되었습니다. 포트 : ' + app.get('port'));
 
     // 데이터베이스 초기화
     database.init(app, config);
    
+});
+
+// ===== socket.io 서버 시작 ===== //
+// 익스프레스 서버를 기반으로 실행된다
+var io = socketio.listen(server);
+console.log('socket.io 요청을 받아들일 준비 완료');
+
+// socket서버 클라이언트 접속 이벤트 처리
+io.sockets.on('connection', function(socket){
+    console.log('connection info : ', socket.request.connection._peername);
+
+    // 소켓 객체에 클라이언트 Host, Port 정보 속성으로 추가
+    // 접속한 클라이언트의 IP주소와 포트번호 확인 
+    socket.remoteAddress = socket.request.connection._peername.address;
+    socket.remotePort = socket.request.connection._peername.port;
 });
