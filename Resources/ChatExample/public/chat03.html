@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>채팅 클라이언트 01</title>
+
+        <script src="jquery-3.3.1.min.js"></script>
+        <script src="https://cdn.socket.io/socket.io-1.4.0.js"></script>
+
+        <script>
+            var host;
+            var port;
+            var socket;
+
+            // 문서 로드 후 실행되는 함수로, 초기화에 주로 사용한다.
+            $(function() {
+                // 버튼 중 id connectButton을 찾아 bind()로 이벤트를 바인딩한다.
+                $("#connectButton").bind('click', function(event){
+                    // 클릭 이벤트 발생 시 작동 선언
+                    println('connectButton이 클릭되었습니다.');
+                    host = $('#hostInput').val();       // val()은 사용자 입력 함수를 가져온다
+                    port = $('#portInput').val();
+
+                    connectToServer();
+                });
+
+                // 전송 버튼 클릭 시 처리
+                $("#sendButton").bind('click', function(event){
+                    var sender = $('#senderInput').val();
+                    var recepient = $('#recepientInput').val();
+                    var data = $('#dataInput').val();
+
+                    var output = {sender:sender, recepient:recepient, command:'chat', type:'text', data:data};
+                    console.log('서버로 보낼 데이터 : ' + JSON.stringify(output));
+
+                    if(socket == undefined){
+                        alert('서버에 연결되어 있지 않습니다.');
+                        return;
+                    }
+
+                    socket.emit('message', output);
+                });
+                
+            });
+
+            // socket.io 클라이언트로 웹 서버에 연결하는 함수 정의
+            function connectToServer(){
+
+                var options = {'forceNew':true};
+                var url = 'http://' + host + ':' + port;
+                // socket.io 클라이언트로 웹 서버에 연결
+                socket = io.connect(url, options);
+
+                socket.on('connect', function(){
+                    println('웹 소켓 서버에 연결되었습니다 : ' + url);
+
+                    socket.on('message', function(message){
+                        console.log(JSON.stringify(message));
+
+                        // sender : 보낸 사람 id, recepient : 받는사람 id, command : 데이터 종류
+                        // type : 전송될 데이터의 형태(text), data : 데이터
+                        println('<p>수신 메시지 : ' + message.sender + ',' + message.recepient + ',' 
+                                + message.command + ',' + message.type + ',' + message.data + '</p>');
+                    });
+                });
+
+                socket.on('disconnect', function(){
+                    println('웹 소켓 연결이 종료되었습니다.');
+                });
+
+            }
+
+            function println(data) {
+				console.log(data);
+				$('#result').append('<p>' + data + '</p>');
+			}
+        </script>
+    </head>
+    <body>
+        <h3>채팅 클라이언트01</h3>
+        <br>
+        <div>
+            <input type="text" id="hostInput" value="localhost" />
+            <input type="text" id="portInput" value="3000" />
+            
+            <input type="button" id="connectButton" value="연결하기" />
+        </div>
+        <br>
+        <div>
+            <div><span>보내는 사람 아이디 : </span> <input type="text" id="senderInput" value="test01"></div>
+            <div><span>받는 사람 아이디 : </span> <input type="text" id="recepientInput" value="ALL"></div>
+            <div><span>메시지 데이터 : </span> <input type="text" id="dataInput" value="hello!"></div>
+            <br>
+            <input type="button" id="sendButton" value="전송" />
+        </div>
+        
+        <hr/>
+        <p>결과 : </p>
+        <div id="result"></div>
+    
+    </body>
+</html>
