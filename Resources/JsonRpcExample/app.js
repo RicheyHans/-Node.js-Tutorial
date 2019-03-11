@@ -1,0 +1,113 @@
+/* 기본 모듈 선언*/
+
+// Express 기본 모듈
+var express = require('express');
+var http = require('http');
+var path = require('path');
+
+// Express 미들웨어
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var static = require('serve-static');
+
+// 오류 핸들러
+var expressErrorHandler = require('express-error-handler');
+
+// Session 미들웨어
+var expressSession = require('express-session');
+
+// ===== Passport 사용 관련 ===== //
+var passport = require('passport');
+var flash = require('connect-flash');
+
+// 설정파일 모듈 로드
+var config = require('./config/config');
+
+// 모듈로 분리한 데이터베이스 파일 불러오기
+var database = require('./database/database');
+
+// 모듈로 분리한 라우팅 파일 불러오기
+var route_loader = require('./routes/route_loader');
+
+// JsonRPC 핸들러 로딩을 위한 파일
+var handler_loader = require('./handlers/handler_loader');
+
+// JsonRPC 사용을 위한 jayson 모듈
+var jayson = require('jayson');
+
+// 익스프레스 서버 객체 생성
+var app = express();
+
+// ===== 뷰 엔진 설정 ===== //
+
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+console.log('뷰 엔진이 ejs로 설정되었습니다.');
+
+
+// ===== 서버 변수 설정 및 static으로 public 폴더 설정 ===== //
+console.log('config.server_port : %d', config.server_port);
+app.set('port', config.server_port || 3000);
+
+
+/* 모듈 초기화, app.use()를 통한 미들웨어 설정*/
+
+// body-parser 사용해 application/x-www-form-urlencoded 파싱
+app.use(bodyParser.urlencoded({ extended: false}));
+
+// body-parser 사용해 application/json 파싱
+app.use(bodyParser.json());
+
+// public 폴더를 static 설정
+app.use('/public', static(path.join(__dirname, 'public')));
+
+// cookie-parser 설정
+app.use(cookieParser());
+
+// Session 설정
+app.use(expressSession({
+    secret: 'my key',
+    resave: true,
+    saveUninitialized: true
+}));
+
+// ===== Passport 설정 ===== // 
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
+
+// 라우팅 정보를 읽어들여 라우팅 설정
+var router = express.Router();
+route_loader.init(app, router);
+
+// 패스포트 설정
+var configPassport = require('./config/passport');
+configPassport(app, passport);
+
+// 패스포트 관련 라우팅 함수
+var userPassport = require('./routes/user_passport');
+userPassport(app, passport);
+
+// ===== jayson 미들웨어 사용 ===== //
+// JSON-RPC 핸들러 정보를 읽어 핸들러 설정
+var jsonrpc_api_path = config.jsonrpc_api_path || '/api';
+handler_loader.init(jayson, app, jsonrpc_api_path);
+
+// ===== 404 오류 페이지 처리 ===== //
+var errorHandler = expressErrorHandler({
+    static: {
+        '404': './public/404.html'
+    }
+});
+
+app.use(expressErrorHandler.httpError(404));
+app.use(errorHandler);
+
+// ===== 서버 시작 ===== //
+http.createServer(app).listen(app.get('port'), function(){
+    console.log('서버가 시작되었습니다. 포트 : ' + app.get('port'));
+
+    // 데이터베이스 초기화
+    database.init(app, config);
+   
+});
