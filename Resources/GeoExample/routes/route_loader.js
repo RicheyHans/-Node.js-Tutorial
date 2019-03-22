@@ -2,14 +2,14 @@ var route_loader = {};
 
 var config = require('../config/config');
 
+
 route_loader.init = function(app, router) {
 	console.log('route_loader.init 호출됨.');
 	return initRoutes(app, router);
-}
+};
 
 // route_info에 정의된 라우팅 정보 처리
 function initRoutes(app, router) {
-
 	var infoLen = config.route_info.length;
 	console.log('설정에 정의된 라우팅 모듈의 수 : %d', infoLen);
  
