@@ -204,8 +204,7 @@ var findWithin = function(req, res){
     // DB객체 초기화
     if(database.db){
         // 1. 가까운 카페 검색
-        database.CoffeeShopModel.findWithin(paramTopLeftLongitude, paramTopLeftLatitude,
-            paramBottomRightLongitude, paramBottomRightLatitude, function(err, results){
+        database.CoffeeShopModel.findWithin(paramTopLeftLongitude, paramTopLeftLatitude, paramBottomRightLongitude, paramBottomRightLatitude, function(err, results){
                 if(err){
                     console.error('카페 검색 중 오류 발생 : ' + err.stack);
 
@@ -219,6 +218,7 @@ var findWithin = function(req, res){
                 
                 if(results){
                     console.dir(results);
+                    console.log('이건 나오냐????????????');
 
                     res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
 				    res.write('<h2>영역 내 카페 왜안나와 ㅆㅂ</h2>');
@@ -230,7 +230,8 @@ var findWithin = function(req, res){
                         var curTel = results[i]._doc.tel;
                         var curLongitude = results[i]._doc.geometry.coordinates[0];
                         var curLatitude = results[i]._doc.geometry.coordinates[1];
-
+                        
+                        
                         res.write('<li>#' + i + ' : ' + curName + ', ' + curAddress + ', ' + curTel + ', ' + curLongitude + ', ' + curLatitude + '</li>');
                     }
 
@@ -250,7 +251,124 @@ var findWithin = function(req, res){
     }
 }
 
+var findCircle = function(req, res){
+    console.log('coffeeshop 모듈 안의 findCircle 호출됨');
+
+    var paramCenterLongitude = req.body.center_longitude || req.query.center_longitude;
+    var paramCenterLatitude = req.body.center_latitude || req.query.center_latitude;
+    var paramRadius = req.body.radius || req.query.radius;
+
+    console.log('요청 파라미터 : ' + paramCenterLongitude + ',' + paramCenterLatitude + ',' + 
+                paramRadius);
+    
+    // DB 객체 참조
+    var database = req.app.get('database');
+
+    // DB객체 초기화 된 경우
+    if(database.db){
+        // 1. 가까운 카페 검색
+        database.CoffeeShopModel.findCircle(paramCenterLongitude, paramCenterLatitude, paramRadius,
+            function(err, results){
+                if(err){
+                    console.error('카페 검색 중 오류 발생: ' + err.stack);
+
+                    res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+                    res.write('<h2>카페 검색 중 오류 발생</h2>');
+                    res.write('<p>' + err.stack + '</p>');
+                    res.end();
+
+                    return;
+                }
+
+                if (results) {
+                    console.dir(results);
+     
+                    res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+                    res.write('<h2>반경 내 커피숍</h2>');
+                    res.write('<div><ul>');
+                    
+                    for (var i = 0; i < results.length; i++) {
+                        var curName = results[i]._doc.name;
+                        var curAddress = results[i]._doc.address;
+                        var curTel = results[i]._doc.tel;
+                        var curLongitude = results[i]._doc.geometry.coordinates[0];
+                        var curLatitude = results[i]._doc.geometry.coordinates[1];
+                        
+                        res.write('    <li>#' + i + ' : ' + curName + ', ' + curAddress + ', ' + curTel + ', ' + curLongitude + ', ' + curLatitude + '</li>');
+                    }	
+                
+                    res.write('</ul></div>');
+                    res.end();
+                } else {
+                    res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+                    res.write('<h2>반경 내 커피숍 조회  실패</h2>');
+                    res.end();
+                }
+            });
+    } else {
+        res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+		res.write('<h2>데이터베이스 연결 실패</h2>');
+		res.end();
+    }
+};
+
+var findNear2 = function(req, res){
+    console.log('coffeeshop 모듈의 findNear2 호출됨');
+
+    var maxDistance = 1000;
+
+    var paramLongitude = req.body.longitude || req.query.longitude;
+    var paramLatitude = req.body.latitude || req.query.latitude;
+
+    console.log('요청 파라미터: ' + paramLongitude + ',' + paramLatitude);
+
+    // DB객체 참조
+    var database = req.app.get('database');
+
+    // DB객체 초기화 된 경우
+    if(database.db){
+        // 1. 가까운 카페 검색
+        database.CoffeeShopModel.findNear(paramLongitude, paramLatitude, maxDistance,
+            function(err, results){
+                if(err){
+                    console.error('카페 검색 중 오류 발생 : ' + err.stack);
+
+                    res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+                    res.write('<h2>커피숍 검색 중 에러 발생</h2>');
+                    res.write('<p>' + err.stack + '</p>');
+                    res.end();
+
+                    return;
+                
+                }
+
+                if(results){
+                    console.dir(results);
+
+                    if(results.length > 0){
+                        res.render('findnear.ejs', {result: results[0]._doc, paramLatitude: paramLatitude, paramLongitude: paramLongitude});
+                    } else {
+                        res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+					    res.write('<h2>가까운 카페 데이터가 없습니다.</h2>');
+					    res.end();
+                    }
+                } else {
+                    res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+                    res.write('<h2>가까운 카페 조회 실패</h2>');
+                    res.end();     
+                }
+            });
+    } else {
+        res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+		res.write('<h2>데이터베이스 연결 실패</h2>');
+		res.end();
+    }
+
+};
+
 module.exports.add = add;
 module.exports.list = list;
 module.exports.findNear = findNear;
 module.exports.findWithin = findWithin;
+module.exports.findCircle = findCircle;
+module.exports.findNear2 = findNear2;

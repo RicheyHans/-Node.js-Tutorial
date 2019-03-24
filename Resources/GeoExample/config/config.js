@@ -13,6 +13,8 @@ module.exports = {
         ,{file:'./coffeeshop', path:'/process/listcoffeeshop', method:'list', type:'post'}
         ,{file:'./coffeeshop', path:'/process/nearcoffeeshop', method:'findNear', type:'post'}
         ,{file:'./coffeeshop', path:'/process/withincoffeeshop', method:'findWithin', type:'post'}
+        ,{file:'./coffeeshop', path:'/process/circlecoffeeshop', method:'findCircle', type:'post'}
+        ,{file:'./coffeeshop', path:'/process/nearcoffeeshop2', method:'findNear2', type:'post'}
     ],
     facebook: {
         clientID: '545274919298556',

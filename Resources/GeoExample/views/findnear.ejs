@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset = "UTF-8">
+    <meta name = "viewport" id = "viewport" content = "width=device-width, height=device-height,
+        initial-scale = 1">
+    <title>GOOGLE MAP</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 95%;
+        }
+    </style>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvUNOk-CQ_gSkd696wNPZ27pg1MsJlwLw"></script>
+    
+    <!-- body 태그 내의 onload 속성으로 설정한 onLoad()함수 선언 -->
+    <script>
+        function onLoad(){
+            initMap();
+        }
+
+        var map;
+        var centerLocation = {lat: <%= paramLatitude %>, lng: <%= paramLongitude %>};
+	    var coffeeLocation = {lat: <%= result.geometry.coordinates[1] %>, lng: <%= result.geometry.coordinates[0] %>};
+
+
+        function initMap(){
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: centerLoacation,
+                zoom: 17
+            });
+
+            var myMarker = new google.maps.Marker({
+                position: centerLoacation,
+                icon: '/public/mylocation.png',
+                animation: google.maps.Animation.BOUNCE,
+            });
+
+            myMarker.setMap(map);
+
+            var coffeeMarker = new google.maps.Marker({
+                position: coffeeLocation,
+                icon:'/public/coffee.png'
+            });
+
+            coffeeMarker.setMap(map);
+        }
+
+    </script>
+
+<!-- onload 속성으로 넣은 코드는 문서 로드가 완료되었을 때 설정된 JS 코드가 실행된다. -->
+<body onload = "onLoad()" >
+    <p>구글맵으로 내 위치 표시하기</p>
+    <div id = "map"></div>
+</head>
+</html>
