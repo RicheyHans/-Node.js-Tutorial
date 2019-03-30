@@ -6,6 +6,15 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
 
     EditText editText;
@@ -23,6 +32,35 @@ public class MainActivity extends AppCompatActivity {
     public void onButton1Clicked(View v){
         String url = editText.getText().toString();
 
+        StringRequest request = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            println("onResponse() 호출됨 : " + response);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams(){
+                Map<String, String> params = new HashMap<>();
+
+                return params;
+            }
+        };
+
+        request.setShouldCache(false);
+        Volley.newRequestQueue(this).add(request);
+        println("웹 서버에 요청함 : " + url);
     }
 
     public void println(final String data){
