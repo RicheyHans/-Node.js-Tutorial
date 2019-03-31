@@ -13,19 +13,43 @@
         android:orientation="horizontal">
 
         <EditText
+            android:id="@+id/editText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:textSize="15dp"
             android:text="http://192.168.0.6:3000/process/listuser"
-            android:id="@+id/editText"/>
+            android:textSize="15dp" />
+
         <Button
+            android:id="@+id/button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="요청"
-            android:id="@+id/button"
-            android:onClick="onButton1Clicked"/>
+            android:onClick="onButton1Clicked"
+            android:text="요청" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/editText2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:text="http://192.168.0.6:3000/process/adddevice"
+            android:textSize="15dp" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onButton2Clicked"
+            android:text="단말 추가" />
 
     </LinearLayout>
 
@@ -35,10 +59,10 @@
         android:background="#ffdeeafc">
 
         <TextView
+            android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text=" "
-            android:id="@+id/textView"/>
+            android:text=" " />
 
     </ScrollView>
 
